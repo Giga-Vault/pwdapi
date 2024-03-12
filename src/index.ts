@@ -133,6 +133,34 @@ app.get('/pwd/sql/allsearch',async (c)=>{
   return c.json(password);
 })
 
+//To update the saved passwords
+
+app.put('/pwd/update/:id', async (c) => {
+  const id = c.req.param('id');
+  const { title, username, password, url, notes } = await c.req.json();
+  const { success } = await c.env.DB.prepare('UPDATE passwords SET title = ?, username = ?, password = ?, url = ?, notes = ? WHERE id = ?').bind(title, username, password, url, notes, id).run();
+
+  if (success) {
+    return c.json({ message: "Password updated successfully" });
+  } else {
+    return c.json({ message: "Password not updated" });
+  }
+})
+
+//To delete the saved passwords
+
+app.delete('/pwd/delete/:id', async (c) => {
+  const id = c.req.param('id');
+  const { success } = await c.env.DB.prepare('DELETE FROM passwords WHERE id = ?').bind(id).run();
+
+  if (success) {
+    return c.json({ message: "Password deleted successfully" });
+  } else {
+    return c.json({ message: "Password not deleted" });
+  }
+})
+
+
 
 
 export default app
