@@ -84,9 +84,11 @@ else{
 
 //Password table posting
 
-app.post('/pwd/new', async(c) => {
+app.post('/pwd/new/:id', async(c) => {
   try {
-    const { title,username, password, url, notes, user_id } = await c.req.json();
+    const user_id = c.req.param('id');
+    const { title,username, password, url, notes} = await c.req.json();
+
     const { success } = await c.env.DB.prepare('INSERT INTO passwords (title,username, password, url, notes, user_id) VALUES (?,?,?,?,?,?)').bind(title,username, password, url, notes, user_id).run();
 
     if (success) {
@@ -102,10 +104,10 @@ app.post('/pwd/new', async(c) => {
 
 //foreign key constraint
 
-app.get('/pwd/get-id', async (c) => {
+app.get('/pwd/get-id/:uid', async (c) => {
   try {
-     const userId = 1; // Assuming you want to retrieve information for user ID 1
-    // const userId = c.req.param('id');
+    // const userId = 1; // Assuming you want to retrieve information for user ID 1
+     const userId = c.req.param('uid');
     const result = await c.env.DB.prepare(`
       SELECT *
       FROM passwords
@@ -160,7 +162,28 @@ app.delete('/pwd/delete/:id', async (c) => {
   }
 })
 
+//login route
 
+app.post('/user-auth',async (c)=>{
 
+  try{
+    const {username,password} = await c.req.json();
+
+    const statement = c.env.DB.prepare('SELECT id FROM users WHERE username = ? AND password = ?');
+    const result = await statement.bind(username,password).all(); 
+    const ans = result.results.length;
+    if(ans==1){
+      return c.json(result);
+    }else{
+      return c.json("not logged in")
+    }
+  }
+  catch (error:any){
+       console.log(error);
+  }
+
+  // const user = await c.env.DB.prepare('SELECT id FROM users WHERE username = ? AND password = ?').bind(username,password).all();
+  // return c.json(user);
+})
 
 export default app
